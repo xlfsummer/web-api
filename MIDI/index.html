@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+    </style>
+</head>
+<body>
+    <p id="stateEl"></p>
+    <section id="midiDeviceInfoEl"></section>
+    <pre id="logEl"></pre>
+
+    <script>
+        (async function main (){
+            let deviceInfo = await getMidiDevices();
+
+            midiDeviceInfoEl.appendChild(renderDivices(
+                [
+                    ...deviceInfo.inputs.values(),
+                    ...deviceInfo.outputs.values()
+                ]
+            ));
+
+            addEventLogListener(deviceInfo.inputs.values());
+
+            return;
+
+            async function getMidiDevices(){
+                stateEl.textContent = "🕑 Getting midi devices...";
+                try {
+                    let midi = await navigator.requestMIDIAccess({
+                        sysex: true
+                    });
+                    stateEl.textContent = "✔ Getting midi devices success";
+                    return midi;
+                } catch {
+                    stateEl.textContent = "❌ Getting midi devices failed";
+                }
+            }
+
+            /**
+             * @param {object[]} devices
+             * @param {string} devices.id
+             * @param {string} devices.name
+             * @param {string} devices.connection
+             * @param {string} devices.manufacturer
+             * @param {string} devices.state
+             * @param {string} devices.type
+             * @param {string} devices.version
+             * @param {function} devices.onmidimessage
+             * @param {function} devices.onstatechange
+             */
+            function renderDivices(devices){
+
+                return dataListToTable(devices);
+
+                function dataListToTable (data){
+                    let table = document.createElement("table");
+                    table.border = 1;
+
+                    if(!data.length){
+                        table.insertRow();
+                        table.rows[0].insertCell();
+                        table.rows[0].cells[0].textContent = "No data"
+                        return table;
+                    }
+
+                    table.appendChild(reanderHeader());
+                    table.appendChild(renderBody());
+
+                    return table;
+
+                    function reanderHeader(){
+                       return getHeaderKeys(data[0]).reduce((row, header) => {
+                            let th = document.createElement("th");
+                            th.textContent = header;
+                            row.appendChild(th);
+                            return row;
+                        }, document.createElement("tr"));
+                    }
+
+                    function renderBody(){
+                        return data.reduce((fr, dataRow) => {      
+                            
+                            let tr = getHeaderKeys(dataRow).map(k => dataRow[k]).reduce((tr, value) => {
+                                let td = document.createElement("td");
+                                try {
+                                    td.textContent = JSON.stringify(value)
+                                } catch {
+                                    td.textContent = {}.toString.call(value);
+                                }
+                                tr.appendChild(td);
+                                return tr;
+                            }, document.createElement("tr"))
+                            
+                            fr.appendChild(tr);
+
+                            return fr;
+                        }, document.createDocumentFragment());
+                    }
+
+                    function getHeaderKeys(data){
+                        // let keys = [];
+                        // for(let key in data) keys.push(key);
+                        // return keys;
+                        return ["id", "name", "manufacturer", "state", "connection", "type", "version"]
+                    }
+                }
+            }
+
+            function addEventLogListener(){
+                [...deviceInfo.inputs.values()].forEach((device) => {
+                    console.log("device.connection:", device.connection)
+                    console.log("add event listener");
+                    console.log("onmidimessage in device:", "onmidimessage" in device);
+                    console.log(device.name);
+                    device.onmidimessage = function(ev) {
+                        let p = document.createElement("p");
+                        p.textContent = `${device.id}:${ev.timeStamp}:${JSON.stringify(ev.data)}`;
+                        logEl.appendChild(p);
+                    }
+                    console.log(device.onmidimessage);
+                    console.log("device.connection:", device.connection)
+                });
+            }
+        })().catch(console.log);
+    </script>
+</body>
+</html>

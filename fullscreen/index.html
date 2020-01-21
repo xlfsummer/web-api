@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>fullscreen demo</title>
+</head>
+    <body>
+    <div id="content"
+        style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        "
+    >
+        <div style="background: white">全屏内容</div>
+    </div>
+    <button>全屏</button>
+    <script>
+        var button = document.getElementsByTagName('button')[0];
+        var pre = document.getElementsByTagName('div')[0];
+        button.onclick = function(){
+            document.documentElement.webkitRequestFullScreen()
+        };
+    </script>
+</body>
+</html>

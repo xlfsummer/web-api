@@ -1,0 +1,13 @@
+- WebAssembly
+- ScreenOrientation
+- Location
+- Battery
+- Acceleration
+- Fullscreen
+- displayMedia
+- Gamepad
+- web auth
+- indexDB
+- Web app manifest
+- Service Worker
+- Web MIDI
